@@ -1,3 +1,14 @@
+/*
+- File: server.js
+- Author: Elijah Heimsoth
+- Date: 03/29/2026
+- Assignment: WebAPI-HW3
+- Class: CSCI 3916
+
+Description: Express REST API for Movie collection with JWT authentication.
+Supports full CRUD operations on /movies and /movies/:movieparameter routes.
+Signup and signin routes handle user registration and JWT token generation.
+ */
 const express = require('express');
 const bodyParser = require('body-parser');
 const passport = require('passport');

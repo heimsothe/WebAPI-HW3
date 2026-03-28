@@ -1,3 +1,13 @@
+/*
+- File: Movies.js
+- Author: Elijah Heimsoth
+- Date: 03/29/2026
+- Assignment: WebAPI-HW3
+- Class: CSCI 3916
+
+Description: Mongoose Movie model with schema validation for title, releaseDate,
+genre (enum), and actors (nested array). Connects to MongoDB Atlas.
+ */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
