@@ -69,10 +69,115 @@ router.post('/signin', async (req, res) => { // Use async/await
 
 router.route('/movies')
     .get(authJwtController.isAuthenticated, async (req, res) => {
-        return res.status(500).json({ success: false, message: 'GET request not supported' });
+        try {
+            // Movie.find() with no arguments returns ALL documents in the collection
+            const movies = await Movie.find();
+
+            // Return the array directly — the Mocha test expects res.body to BE an array
+            res.status(200).json(movies);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, msg: 'Something went wrong.' });
+        }
     })
     .post(authJwtController.isAuthenticated, async (req, res) => {
-        return res.status(500).json({ success: false, message: 'POST request not supported' });
+        // Validate that the request body contains all required fields
+        if (!req.body.title || !req.body.releaseDate || !req.body.genre || !req.body.actors) {
+            return res.status(400).json({
+                success: false,
+                msg: 'Please include title, releaseDate, genre, and actors.'
+            });
+        }
+
+        // Business rule: each movie must have at least 3 actors
+        if (req.body.actors.length < 3) {
+            return res.status(400).json({
+                success: false,
+                msg: 'Movies must have at least 3 actors.'
+            });
+        }
+
+        try {
+            // Create a new Movie document from the request body
+            const movie = new Movie({
+                title: req.body.title,
+                releaseDate: req.body.releaseDate,
+                genre: req.body.genre,
+                actors: req.body.actors,
+            });
+
+            // .save() triggers Mongoose schema validation (required, enum, min/max)
+            // then writes the document to the 'movies' collection in Atlas
+            const savedMovie = await movie.save();
+
+            // Return 201 Created with the saved movie object
+            res.status(201).json({ movie: savedMovie });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, msg: 'Something went wrong.' });
+        }
+    })
+    .put(authJwtController.isAuthenticated, async (req, res) => {
+        res.status(405).json({ success: false, msg: 'PUT not supported on /movies. Use /movies/:movieparameter.' });
+    })
+    .delete(authJwtController.isAuthenticated, async (req, res) => {
+        res.status(405).json({ success: false, msg: 'DELETE not supported on /movies. Use /movies/:movieparameter.' });
+    });
+
+router.route('/movies/:movieparameter')
+    .get(authJwtController.isAuthenticated, async (req, res) => {
+        try {
+            // findOne() returns a single document matching the filter, or null
+            const movie = await Movie.findOne({ title: req.params.movieparameter });
+
+            if (!movie) {
+                return res.status(404).json({ success: false, msg: 'Movie not found.' });
+            }
+
+            res.status(200).json(movie);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, msg: 'Something went wrong.' });
+        }
+    })
+    .put(authJwtController.isAuthenticated, async (req, res) => {
+        try {
+            // findOneAndUpdate: find by title, apply updates from req.body,
+            // { new: true } returns the document AFTER the update (not before)
+            const movie = await Movie.findOneAndUpdate(
+                { title: req.params.movieparameter },
+                req.body,
+                { new: true }
+            );
+
+            if (!movie) {
+                return res.status(404).json({ success: false, msg: 'Movie not found.' });
+            }
+
+            res.status(200).json({ success: true, msg: 'Movie updated.', movie: movie });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, msg: 'Something went wrong.' });
+        }
+    })
+    .delete(authJwtController.isAuthenticated, async (req, res) => {
+        try {
+            // findOneAndDelete finds and removes the document, returning what was deleted
+            const movie = await Movie.findOneAndDelete({ title: req.params.movieparameter });
+
+            if (!movie) {
+                return res.status(404).json({ success: false, msg: 'Movie not found.' });
+            }
+
+            res.status(200).json({ success: true, msg: 'Movie deleted.', movie: movie });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, msg: 'Something went wrong.' });
+        }
+    })
+    .post(authJwtController.isAuthenticated, async (req, res) => {
+        // POST on a specific movie doesn't make sense — create movies at POST /movies
+        res.status(405).json({ success: false, msg: 'POST not supported on /movies/:movieparameter. Use POST /movies.' });
     });
 
 app.use('/', router);
