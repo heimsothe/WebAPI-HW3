@@ -15,7 +15,30 @@ connectDB();
 
 // Movie schema
 var MovieSchema = new Schema({
+    // Title of the movie — required, and indexed for fast lookups
+    title: { type: String, required: true, index: true },
 
+    // Release year — stored as a Number (not a Date), constrained to 1900-2100
+    releaseDate: {
+        type: Number,
+        min: [1900, 'Must be greater than 1899'],
+        max: [2100, 'Must be less than 2100']
+    },
+
+    // Genre — must be one of exactly these 10 strings
+    genre: {
+        type: String,
+        enum: [
+            'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy',
+            'Horror', 'Mystery', 'Thriller', 'Western', 'Science Fiction'
+        ],
+    },
+
+    // Actors — an array of subdocuments, each with actorName and characterName
+    actors: [{
+        actorName: String,
+        characterName: String,
+    }],
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);
