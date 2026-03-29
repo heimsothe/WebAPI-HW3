@@ -17,7 +17,7 @@
 All routes require JWT authentication. Obtain a token via `POST /signin`.
 
 ## Postman Collection
-- [Collection JSON](Postman/CSC3916_HW3.postman_collection.json)
+- [Collection JSON](Postman/CSCI3916_HW3.postman_collection.json)
 - [Environment JSON](Postman/HEIMSOTH%20-%20HW3.postman_environment.json)
 
 ### Collection Details
